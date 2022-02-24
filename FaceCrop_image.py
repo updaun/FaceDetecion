@@ -1,6 +1,7 @@
 import cv2
 import mediapipe as mp
 import time
+import os
 
 
 class FaceDetector():
@@ -59,38 +60,60 @@ class FaceDetector():
 
 
 def main():
-    cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
-    a, b = 0,0
-    detector = FaceDetector(0.4)
-    while True:
-        success, img = cap.read()
-        w, h, c = img.shape
-        img, bboxs = detector.findFaces(img, draw=False)
-        # print(bboxs)
-        add_size = 30
-        if len(bboxs) != 0:
-            a = bboxs[0][1][0] - add_size
-            b = bboxs[0][1][1] - add_size - 40
-            if (a<0) : a=0
-            if (b<0) : b=0  
-            c = bboxs[0][1][2] + (2*add_size)
-            d = bboxs[0][1][3] + (2*add_size) + 40
-            if (c>w) : c=w
-            if (d>h) : c=h
-            cropped_face = img[b:b+d, a:a+c]
-            # cTime = time.time()
-            # fps = 1/(cTime-pTime)
-            # pTime = cTime
-            # cv2.putText(img, f'FPS:{int(fps)}', (20, 70), cv2.FONT_HERSHEY_PLAIN,
-            #             3, (0, 255, 0), 2)
-            # cv2.imshow("Image", img)
-            cv2.imshow("cropped", cropped_face)
+    a, b = 0, 0
+    # cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+    sample_img_path = 'data/train/train/images/006928_male_Asian_19/mask4.jpg'
+    
+    idx = sample_img_path[::-1].find("/")
+    dot_idx = sample_img_path[::-1].find(".")
 
-        if cv2.waitKey(1) & 0xff == 27:
-            break
+    dir_name, file_name = sample_img_path[24:-idx-1], sample_img_path[-idx:-dot_idx-1]
 
-    cap.release()
-    cv2.destroyAllWindows()
+    img = cv2.imread(sample_img_path)
+    # cv2.imshow("Image", img)
+    detector = FaceDetector(0.6)
+    
+    w, h, c = img.shape
+
+    img, bboxs = detector.findFaces(img, draw=False)
+    # cv2.imshow("Image", img)
+    add_size = 30
+
+    if len(bboxs) != 0:
+        a = bboxs[0][1][0] - add_size
+        b = bboxs[0][1][1] - add_size - 40
+        if (a<0) : a=0
+        if (b<0) : b=0
+        c = bboxs[0][1][2] + (2*add_size)
+        d = bboxs[0][1][3] + (2*add_size) + 40
+        if (c>w) : c=w
+        if (d>h) : c=h
+        print(b,b+d, a,a+c)
+        img = cv2.circle(img, (a,b), 5, (255,255,255), 2)
+        img = cv2.circle(img, (a+c,b+d), 5, (255,255,255), 2)
+        
+        cropped_face = img[b:b+d, a:a+c]
+
+        # cTime = time.time()
+        # fps = 1/(cTime-pTime)
+        # pTime = cTime
+        # cv2.putText(img, f'FPS:{int(fps)}', (20, 70), cv2.FONT_HERSHEY_PLAIN,
+        #             3, (0, 255, 0), 2)
+        # cv2.imshow("Image", img)
+        cv2.imshow("cropped", cropped_face)
+        output_dir_path = "output_image/" + dir_name
+        if not os.path.exists(output_dir_path):
+            os.makedirs(output_dir_path)
+        cv2.imwrite("output_image/"+dir_name+"/"+ file_name +".jpg", cropped_face)
+        print("success save :  " + "output_image/"+dir_name+"/"+ file_name +".jpg")
+    else:
+        print(dir_name + "/" + file_name)
+
+        
+    print("Finish!")
+
+    cv2.waitKey(1)
+    # cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
