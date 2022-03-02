@@ -78,12 +78,18 @@ def main():
             if (c>w) : c=w
             if (d>h) : c=h
             cropped_face = img[b:b+d, a:a+c]
+
+            # Print FPS
+            
             # cTime = time.time()
             # fps = 1/(cTime-pTime)
             # pTime = cTime
             # cv2.putText(img, f'FPS:{int(fps)}', (20, 70), cv2.FONT_HERSHEY_PLAIN,
             #             3, (0, 255, 0), 2)
-            # cv2.imshow("Image", img)
+
+            # draw cropped bounding box
+            img = cv2.rectangle(img, (a,b), (a+c,b+d), (255, 0, 255), 2)
+            cv2.imshow("Image", img)
             cv2.imshow("cropped", cropped_face)
 
         if cv2.waitKey(1) & 0xff == 27:
