@@ -30,12 +30,13 @@ class FaceDetector():
                 bbox = int(bboxC.xmin * iw), int(bboxC.ymin * ih), \
                     int(bboxC.width * iw), int(bboxC.height * ih)
                 bboxs.append([id, bbox, detection.score])
+                
                 if draw:
                     img = self.fancyDraw(img, bbox)
                     #cv2.rectangle(img, bbox, (255, 0, 255), 2)
                     cv2.putText(img, f'{int(detection.score[0]*100)}%', (bbox[0], bbox[1]-20), cv2.FONT_HERSHEY_PLAIN,
                                 2, (255, 0, 255), 2)
-        return img, bboxs
+        return img, bboxs, detection.score[0]
 
     def fancyDraw(self, img, bbox, l=30, t=6, rt=1):
         x, y, w, h = bbox
@@ -59,13 +60,13 @@ class FaceDetector():
 
 
 def main():
-    cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     a, b = 0,0
-    detector = FaceDetector(0.4)
+    detector = FaceDetector(0.3)
     while True:
         success, img = cap.read()
         w, h, c = img.shape
-        img, bboxs = detector.findFaces(img, draw=False)
+        img, bboxs, score = detector.findFaces(img, draw=False)
         # print(bboxs)
         add_size = 30
         if len(bboxs) != 0:
@@ -89,6 +90,11 @@ def main():
 
             # draw cropped bounding box
             img = cv2.rectangle(img, (a,b), (a+c,b+d), (255, 0, 255), 2)
+
+            # draw score
+            cv2.putText(img, f'{int(score*100)}%', (a, b-10), cv2.FONT_HERSHEY_PLAIN,
+                                2, (255, 0, 255), 2)
+
             cv2.imshow("Image", img)
             cv2.imshow("cropped", cropped_face)
 
